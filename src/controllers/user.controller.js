@@ -36,7 +36,7 @@ const getProfile = async (req, res) => {
             followersCounts: user.followersCounts,
             followingCounts: user.followingCounts,
             lvl,
-            posts: user.Posts?.map(post => ({
+            posts: user.Posts.map(post => ({
                 id: post.id,
                 title: post.title,
                 caption: post.caption,
