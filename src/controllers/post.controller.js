@@ -113,7 +113,7 @@ const getPostById = async (req, res) => {
                     attributes: ['id', 'username', 'profile_pic']
                 },
                 {
-                    model: Comment,
+                    model: Comments,
                     as: 'comments',
                     include: [
                         {
@@ -188,7 +188,7 @@ const addComment = async (req, res) => {
         }
 
         // Crear el comentario
-        const newComment = await Comment.create({
+        const newComment = await Comments.create({
             postId,
             userId,
             comment,
@@ -207,7 +207,7 @@ const deleteComment = async (req, res) => {
         const { userId } = req.user; // ID del usuario autenticado
 
         // Buscar el comentario por su ID
-        const comment = await Comment.findByPk(commentId);
+        const comment = await Comments.findByPk(commentId);
 
         // Verificar si el comentario existe
         if (!comment) {
