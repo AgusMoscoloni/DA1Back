@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "CloudFormation template for S3 bucket and IAM role for EC2 to upload files."
+
+Parameters:
+  bucketName:
+    Type: String
+    Default: "dev-uade-images"
+    Description: "The name of the S3 bucket."
+
+Resources:
+  # S3 Bucket
+  BucketImages:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref bucketName
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced  # No ACLs allowed
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: false
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: false
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+              - PUT
+            AllowedOrigins:
+              - "*"
+            MaxAge: 3000
+
+  # S3 Bucket Policy for EC2 IAM Role Access
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref BucketImages
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: EC2UploadAccess
+            Effect: Allow
+            Principal: '*'
+            Action:
+              - "s3:PutObject"
+              - "s3:PutObjectAcl"
+            Resource: !Sub "${BucketImages.Arn}/*"
+
+  # IAM Role for EC2 with S3 Access
+  EC2S3UploadRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: "S3UploadPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:PutObject"
+                  - "s3:PutObjectAcl"
+                Resource: !Sub "${BucketImages.Arn}/*"
+
+  # EC2 Instance Profile for IAM Role Attachment
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2S3UploadRole
+
+Outputs:
+  S3BucketName:
+    Value: !Ref BucketImages
+    Description: "S3 bucket name for storing images"
+    Export:
+      Name: uade-S3BucketName
+
+  S3BucketArn:
+    Value: !GetAtt BucketImages.Arn
+    Description: "ARN of the S3 bucket"
+    Export:
+      Name: uade-S3BucketArn
+
+  EC2S3UploadRoleArn:
+    Value: !GetAtt EC2S3UploadRole.Arn
+    Description: "IAM Role ARN for EC2 to access S3 bucket"
+    Export:
+      Name: uade-EC2S3UploadRoleArn
