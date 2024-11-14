@@ -35,6 +35,11 @@ export default (sequelize) => {
         date: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW
+        },
+        likes: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0
         }
     }, {
         tableName: 'Comments',

@@ -6,6 +6,7 @@ import { sendErrorResponse, sendSuccessResponse } from '../utils/helper.js';
 const createPost = async (req, res) => {
     try {
         const { id } = req.user;
+        
         const {title, caption, location, media } = req.body;
 
         const newPost = await Post.create({
@@ -16,7 +17,8 @@ const createPost = async (req, res) => {
             media,
             date: new Date()
         });
-
+        // Incrementar el contador de posts en el perfil del usuario
+        await User.increment('postCounts', { where: { id } });
         sendSuccessResponse({ res, data: newPost, message: 'Post created successfully', statusCode: 201 });
     } catch (error) {
         sendErrorResponse({ res, error, message: 'Failed to create post' });
@@ -165,6 +167,8 @@ const deletePost = async (req, res) => {
 
         // Eliminar el post
         await post.destroy();
+        // Reducir el contador de posts en el perfil del usuario
+        await User.decrement('postCount', { where: { id: userId } });
 
         sendSuccessResponse({ res, message: 'Post deleted successfully' });
     } catch (error) {
@@ -190,7 +194,8 @@ const addComment = async (req, res) => {
             comment,
             createdAt: new Date(),
         });
-
+        // Incrementar el contador de posts en el perfil del usuario
+        await User.increment('commentCount', { where: { id } });
         sendSuccessResponse({ res, data: newComment, message: 'Comment added successfully', statusCode: 201 });
     } catch (error) {
         sendErrorResponse({ res, error, message: 'Failed to add comment' });
@@ -216,6 +221,8 @@ const deleteComment = async (req, res) => {
 
         // Eliminar el comentario
         await comment.destroy();
+        // Reducir el contador de posts en el perfil del usuario
+        await User.decrement('commentCount', { where: { id } });
 
         sendSuccessResponse({ res, message: 'Comment deleted successfully' });
     } catch (error) {
@@ -305,7 +312,61 @@ const addPostAsFavorite = async (req, res) => {
     } catch (error) {
         sendErrorResponse({ res, error, message: 'Failed to add post to favorites' });
     }
-};  
+};
+
+const addLike = async (req, res) => {
+    try {
+        const { postId } = req.params; // ID del post al que se da like
+        const { id} = req.user; // ID del usuario autenticado
+
+        // Verificar si el like ya existe para evitar duplicados
+        const existingLike = await Like.findOne({
+            where: { postId, userId:id },
+        });
+
+        if (existingLike) {
+            return sendErrorResponse({ res, message: 'You have already liked this post', statusCode: 400 });
+        }
+
+        // Crear el like en la base de datos
+        await Like.create({ postId, id });
+
+        // Incrementar el contador de likes en el post
+        await Post.increment('likesCount', { where: { id: postId } });
+
+        sendSuccessResponse({ res, message: 'Post liked successfully', statusCode: 200 });
+    } catch (error) {
+        sendErrorResponse({ res, error, message: 'Failed to like post' });
+    }
+};
+
+const removeLike = async (req, res) => {
+    try {
+        const { postId } = req.params; // ID del post del cual se quita el like
+        const { id} = req.user; // ID del usuario autenticado
+
+        // Verificar si el like existe para poder eliminarlo
+        const existingLike = await Like.findOne({
+            where: { postId, userId: id },
+        });
+
+        if (!existingLike) {
+            return sendErrorResponse({ res, message: 'Like not found', statusCode: 404 });
+        }
+
+        // Eliminar el like
+        await existingLike.destroy();
+
+        // Decrementar el contador de likes en el post
+        await Post.decrement('likesCount', { where: { id: postId } });
+
+        sendSuccessResponse({ res, message: 'Like removed successfully', statusCode: 200 });
+    } catch (error) {
+        sendErrorResponse({ res, error, message: 'Failed to remove like' });
+    }
+};
+
+
 export default {
     createPost,
     getTimeline,
@@ -316,5 +377,7 @@ export default {
     removePostAsFavorite,
     getFavorites,
     addPostAsFavorite,
-    removePostAsFavorite
+    removePostAsFavorite,
+    removeLike,
+    addLike
 };

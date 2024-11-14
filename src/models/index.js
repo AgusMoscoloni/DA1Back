@@ -5,6 +5,7 @@ import FriendshipModel from './Friendship.js';
 import CommentModel from './Comment.js';
 import FavoriteModel from './Favorite.js';
 import AdsModel from './Ads.js';
+import LikeModel from './Like.js';  // Importa el modelo Like
 
 // Inicializar los modelos
 const User = UserModel(sequelize);
@@ -13,6 +14,7 @@ const Friendship = FriendshipModel(sequelize);
 const Comments = CommentModel(sequelize);
 const Favorite = FavoriteModel(sequelize);
 const Ads = AdsModel(sequelize);
+const Like = LikeModel(sequelize);  // Inicializa el modelo Like
 
 // Definir relaciones entre los modelos
 
@@ -50,5 +52,13 @@ Favorite.belongsTo(User, { foreignKey: 'userId' });
 Post.hasMany(Favorite, { foreignKey: 'postId' });
 Favorite.belongsTo(Post, { foreignKey: 'postId' });
 
+// Relación Usuario - Likes
+User.hasMany(Like, { foreignKey: 'userId' });
+Like.belongsTo(User, { foreignKey: 'userId' });
+
+// Relación Publicación - Likes
+Post.hasMany(Like, { foreignKey: 'postId' });
+Like.belongsTo(Post, { foreignKey: 'postId' });
+
 // Exportar los modelos y la conexión de Sequelize
-export { sequelize, User, Post, Friendship, Comments, Favorite, Ads };
+export { sequelize, User, Post, Friendship, Comments, Favorite, Ads, Like };
