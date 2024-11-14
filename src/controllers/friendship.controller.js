@@ -136,32 +136,69 @@ const getFriends = async (req, res) => {
     try {
         const { id } = req.user;
 
-        const friends = await Friendship.findAll({
+        // Obtener usuarios a los que el usuario sigue (following)
+        const following = await Friendship.findAll({
             where: {
-                followerId: id,
-                status: 'accepted'
+                followerId: id
             },
             include: [
                 {
                     model: User,
-                    as: 'friend',
+                    as: 'User', // Cambia este alias según cómo definiste la relación en el modelo
                     attributes: ['id', 'name', 'surname', 'profile_pic']
                 }
             ]
         });
 
-        const response = friends.map(friend => ({
-            id: friend.friend.id,
-            name: friend.friend.name,
-            surname: friend.friend.surname,
-            profile_pic: friend.friend.profile_pic
+        // Obtener usuarios que siguen al usuario (followers)
+        const followers = await Friendship.findAll({
+            where: {
+                followingId: id
+            },
+            include: [
+                {
+                    model: User,
+                    as: 'User', // Cambia este alias según cómo definiste la relación en el modelo
+                    attributes: ['id', 'name', 'surname', 'profile_pic']
+                }
+            ]
+        });
+
+        // Formatear la respuesta para 'following'
+        const followingResponse = following.map(friend => ({
+            id: friend.User.id,
+            name: friend.User.name,
+            surname: friend.User.surname,
+            profile_pic: friend.User.profile_pic,
+            status: friend.status,
+            createdAt: friend.createdAt
         }));
 
-        sendSuccessResponse({ res, data: response, message: 'Friends retrieved successfully' });
+        // Formatear la respuesta para 'followers'
+        const followersResponse = followers.map(friend => ({
+            id: friend.User.id,
+            name: friend.User.name,
+            surname: friend.User.surname,
+            profile_pic: friend.User.profile_pic,
+            status: friend.status,
+            createdAt: friend.createdAt
+        }));
+
+        // Respuesta consolidada
+        sendSuccessResponse({
+            res,
+            data: {
+                following: followingResponse,
+                followers: followersResponse
+            },
+            message: 'Friends retrieved successfully'
+        });
     } catch (error) {
         sendErrorResponse({ res, error, message: 'Failed to retrieve friends' });
     }
 };
+
+
 
 export default {
     sendFriendRequest,

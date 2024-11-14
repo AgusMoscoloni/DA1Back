@@ -60,5 +60,10 @@ Like.belongsTo(User, { foreignKey: 'userId' });
 Post.hasMany(Like, { foreignKey: 'postId' });
 Like.belongsTo(Post, { foreignKey: 'postId' });
 
+// Relación Usuario - Friendship
+User.hasMany(Friendship, { foreignKey: 'followerId' });
+User.hasMany(Friendship, { foreignKey: 'followingId' });
+Friendship.belongsTo(User, { foreignKey: 'followerId' });
+Friendship.belongsTo(User, { foreignKey: 'followingId' });
 // Exportar los modelos y la conexión de Sequelize
 export { sequelize, User, Post, Friendship, Comments, Favorite, Ads, Like };

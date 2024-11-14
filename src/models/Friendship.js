@@ -24,7 +24,13 @@ export default (sequelize) => {
                 key: 'id'
             },
             onDelete: 'CASCADE'
-        }
+        },
+        status : {
+            type: DataTypes.ENUM('pending', 'accepted', 'rejected'),
+            allowNull: false,
+            defaultValue: 'pending'
+        
+        },
     }, {
         tableName: 'Friendships',
         indexes: [
