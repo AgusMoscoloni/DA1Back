@@ -19,9 +19,9 @@ const createPost = async (req, res) => {
         });
         // Incrementar el contador de posts en el perfil del usuario
         await User.increment('postCounts', { where: { id } });
-        sendSuccessResponse({ res, data: newPost, message: 'Post created successfully', statusCode: 201 });
+        return sendSuccessResponse({ res, data: newPost, message: 'Post created successfully', statusCode: 201 });
     } catch (error) {
-        sendErrorResponse({ res, error, message: 'Failed to create post' });
+        return sendErrorResponse({ res, error, message: 'Failed to create post' });
     }
 };
 
@@ -93,9 +93,9 @@ const getTimeline = async (req, res) => {
             };
         });
 
-        sendSuccessResponse({ res, data: response, message: 'Timeline retrieved successfully' });
+        return sendSuccessResponse({ res, data: response, message: 'Timeline retrieved successfully' });
     } catch (error) {
-        sendErrorResponse({ res, error, message: 'Failed to retrieve timeline' });
+        return sendErrorResponse({ res, error, message: 'Failed to retrieve timeline' });
     }
 };
 
@@ -109,20 +109,20 @@ const getPostById = async (req, res) => {
             include: [
                 {
                     model: User,
-                    as: 'creator',  // Alias para el creador del post
+                    as: 'User',  // Alias para el creador del post
                     attributes: ['id', 'username', 'profile_pic']
                 },
                 {
                     model: Comments,
-                    as: 'comments',
+                    as: 'Comments',
                     include: [
                         {
                             model: User,
-                            as: 'commenter',  // Alias para el usuario que hizo el comentario
+                            as: 'User',  // Alias para el usuario que hizo el comentario
                             attributes: ['id', 'username', 'profile_pic']
                         }
                     ],
-                    attributes: ['id', 'comment', 'createdAt']  // Atributos del comentario
+                    attributes: ['id', 'text', 'createdAt']  // Atributos del comentario
                 }
             ],
             attributes: [
@@ -141,9 +141,9 @@ const getPostById = async (req, res) => {
             return sendErrorResponse({ res, message: 'Post not found', statusCode: 404 });
         }
 
-        sendSuccessResponse({ res, data: post, message: 'Post retrieved successfully' });
+        return  sendSuccessResponse({ res, data: post, message: 'Post retrieved successfully' });
     } catch (error) {
-        sendErrorResponse({ res, error, message: 'Failed to retrieve post' });
+        return sendErrorResponse({ res, error, message: 'Failed to retrieve post' });
     }
 };
 
@@ -170,16 +170,16 @@ const deletePost = async (req, res) => {
         // Reducir el contador de posts en el perfil del usuario
         await User.decrement('postCount', { where: { id: userId } });
 
-        sendSuccessResponse({ res, message: 'Post deleted successfully' });
+        return  sendSuccessResponse({ res, message: 'Post deleted successfully' });
     } catch (error) {
-        sendErrorResponse({ res, error, message: 'Failed to delete post' });
+        return sendErrorResponse({ res, error, message: 'Failed to delete post' });
     }
 };
 const addComment = async (req, res) => {
     try {
         const { postId } = req.params; // ID del post al que se va a comentar
-        const { comment } = req.body; // Texto del comentario
-        const { userId } = req.user; // ID del usuario autenticado
+        const { text } = req.body; 
+        const { id } = req.user; 
 
         // Verificar que el post existe
         const post = await Post.findByPk(postId);
@@ -190,21 +190,21 @@ const addComment = async (req, res) => {
         // Crear el comentario
         const newComment = await Comments.create({
             postId,
-            userId,
-            comment,
+            userId: id,
+            text,
             createdAt: new Date(),
         });
         // Incrementar el contador de posts en el perfil del usuario
-        await User.increment('commentCount', { where: { id } });
-        sendSuccessResponse({ res, data: newComment, message: 'Comment added successfully', statusCode: 201 });
+        await User.increment('commentCounts', { where: { id } });
+        return sendSuccessResponse({ res, data: newComment, message: 'Comment added successfully', statusCode: 201 });
     } catch (error) {
-        sendErrorResponse({ res, error, message: 'Failed to add comment' });
+        return sendErrorResponse({ res, error, message: 'Failed to add comment' });
     }
 };
 const deleteComment = async (req, res) => {
     try {
         const { commentId } = req.params; // ID del comentario a eliminar
-        const { userId } = req.user; // ID del usuario autenticado
+        const { id } = req.user; // ID del usuario autenticado
 
         // Buscar el comentario por su ID
         const comment = await Comments.findByPk(commentId);
@@ -214,19 +214,14 @@ const deleteComment = async (req, res) => {
             return sendErrorResponse({ res, message: 'Comment not found', statusCode: 404 });
         }
 
-        // Verificar si el usuario es el propietario del comentario
-        if (comment.userId !== userId) {
-            return sendErrorResponse({ res, message: 'You do not have permission to delete this comment', statusCode: 403 });
-        }
-
         // Eliminar el comentario
         await comment.destroy();
         // Reducir el contador de posts en el perfil del usuario
-        await User.decrement('commentCount', { where: { id } });
+        await User.decrement('commentCounts', { where: { id } });
 
-        sendSuccessResponse({ res, message: 'Comment deleted successfully' });
+        return  sendSuccessResponse({ res, message: 'Comment deleted successfully' });
     } catch (error) {
-        sendErrorResponse({ res, error, message: 'Failed to delete comment' });
+        return  sendErrorResponse({ res, error, message: 'Failed to delete comment' });
     }
 };
 
@@ -254,16 +249,16 @@ const removePostAsFavorite = async (req, res) => {
                     postId: postId
                 }
             });
-            sendSuccessResponse({ res, message: 'Post removed from favorites' });
+            return sendSuccessResponse({ res, message: 'Post removed from favorites' });
         } else {
             await Favorite.create({
                 userId: id,
                 postId: postId
             });
-            sendSuccessResponse({ res, message: 'Post added to favorites' });
+            return sendSuccessResponse({ res, message: 'Post added to favorites' });
         }
     } catch (error) {
-        sendErrorResponse({ res, error, message: 'Failed to add post to favorites' });
+        return sendErrorResponse({ res, error, message: 'Failed to add post to favorites' });
     }
 };
 
@@ -273,12 +268,27 @@ const getFavorites = async (req, res) => {
         const favorites = await Favorite.findAll({
             where: {
                 userId: id
-            }
+            },
+            include: [
+                {
+                    model: Post,
+                    as: 'Post',  // Alias para el post que se hizo el like
+                    attributes: ['id', 'title', 'caption', 'location', 'media', 'date', 'likesCount']
+                }
+            ]
         });
-
-        sendSuccessResponse({ res, data: favorites });
+        const response = favorites.map(favorite => ({
+            id: favorite.Post.id,
+            title: favorite.Post.title,
+            caption: favorite.Post.caption,
+            location: favorite.Post.location,
+            media: favorite.Post.media,
+            date: favorite.Post.date,
+            likesCount: favorite.Post.likesCount
+        }));
+        return sendSuccessResponse({ res, data: response });
     } catch (error) {
-        sendErrorResponse({ res, error, message: 'Failed to get favorites' });
+        return sendErrorResponse({ res, error, message: 'Failed to get favorites' });
     }
 };  
 
@@ -308,9 +318,9 @@ const addPostAsFavorite = async (req, res) => {
             userId: id,
             postId: postId
         });
-        sendSuccessResponse({ res, message: 'Post added to favorites' });
+        return sendSuccessResponse({ res, message: 'Post added to favorites' });
     } catch (error) {
-        sendErrorResponse({ res, error, message: 'Failed to add post to favorites' });
+        return sendErrorResponse({ res, error, message: 'Failed to add post to favorites' });
     }
 };
 
@@ -334,9 +344,9 @@ const addLike = async (req, res) => {
         // Incrementar el contador de likes en el post
         await Post.increment('likesCount', { where: { id: postId } });
 
-        sendSuccessResponse({ res, message: 'Post liked successfully', statusCode: 200 });
+        return sendSuccessResponse({ res, message: 'Post liked successfully', statusCode: 200 });
     } catch (error) {
-        sendErrorResponse({ res, error, message: 'Failed to like post' });
+        return sendErrorResponse({ res, error, message: 'Failed to like post' });
     }
 };
 
@@ -360,9 +370,9 @@ const removeLike = async (req, res) => {
         // Decrementar el contador de likes en el post
         await Post.decrement('likesCount', { where: { id: postId } });
 
-        sendSuccessResponse({ res, message: 'Like removed successfully', statusCode: 200 });
+        return sendSuccessResponse({ res, message: 'Like removed successfully', statusCode: 200 });
     } catch (error) {
-        sendErrorResponse({ res, error, message: 'Failed to remove like' });
+        return  sendErrorResponse({ res, error, message: 'Failed to remove like' });
     }
 };
 

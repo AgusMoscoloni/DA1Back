@@ -17,7 +17,7 @@ router.post('/posts/:postId/comments', middleware.validateToken, PostController.
 // Eliminar un comentario por su ID
 router.delete('/comments/:commentId', middleware.validateToken, PostController.deleteComment);
 
-router.post('/posts/:postId/favorites', PostController.addPostAsFavorite)
-router.get('/posts/favorites', PostController.getFavorites)
-router.delete('/posts/favorites/:id', PostController.removePostAsFavorite)
+router.post('/posts/:postId/favorites', middleware.validateToken,PostController.addPostAsFavorite)
+router.get('/favorites', middleware.validateToken,PostController.getFavorites)
+router.delete('/favorites/:id',middleware.validateToken, PostController.removePostAsFavorite)
 export default router;
