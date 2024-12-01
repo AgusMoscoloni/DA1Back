@@ -169,20 +169,22 @@ const resetPassword = async (req, res) => {
 };
 
 const refreshToken = async (req, res) => {
-    const { userId } = req.user;
+    const { id } = req.user;
 
-    if (!userId) {
+    
+    const user = await User.findByPk(id);
+    if (!user) {
         return sendErrorResponse({ res, message: 'No se encontró ningún usuario con esos datos', statusCode: 404 });
     }
-
     try {
-        const accessToken = generateAccessToken(userId);
-        const refreshToken = generateRefreshToken(userId);
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
         return sendSuccessResponse({ res, data: { token: {accessToken, refreshToken }}, message: 'Refresh token refreshed successfully' });
     } catch (err) {
         console.error('Invalid Refresh Token:', err);
         return sendErrorResponse({ res, message: 'Invalid or expired refresh token', statusCode: 403 });
     }
 };
+
 
 export default { SignUp, Login, resetPassword, forgotPassword, refreshToken };

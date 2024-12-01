@@ -46,6 +46,7 @@ Resources:
             Action:
               - "s3:PutObject"
               - "s3:PutObjectAcl"
+              - ""
             Resource: !Sub "${BucketImages.Arn}/*"
 
   # IAM Role for EC2 with S3 Access

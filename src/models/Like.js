@@ -28,11 +28,5 @@ export default (sequelize) => {
         timestamps: true // Guarda createdAt y updatedAt para registrar cuándo se dio el like
     });
 
-    // Relaciones
-    Like.associate = (models) => {
-        Like.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
-        Like.belongsTo(models.Post, { foreignKey: 'postId', as: 'post' });
-    };
-
     return Like;
 };
