@@ -32,7 +32,7 @@ export default (sequelize) => {
             allowNull: true
         },
         media: {
-            type: DataTypes.ARRAY(DataTypes.STRING),
+            type: DataTypes.TEXT,
             defaultValue: []
         },
         likesCount: {
