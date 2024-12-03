@@ -1,4 +1,4 @@
-import { User, Post, Comments } from '../models/index.js';
+import { User, Post, Comments, Friendship } from '../models/index.js';
 import { sendErrorResponse, sendSuccessResponse } from '../utils/helper.js';
 import UserService from '../services/User.services.js';
 const getProfile = async (req, res) => {

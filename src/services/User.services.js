@@ -1,5 +1,5 @@
 
-import { User } from '../models/index.js';
+import { User, Friendship} from '../models/index.js';
 import { Op } from 'sequelize';
 
 const searchUsers = async (searchQuery) => {
@@ -17,7 +17,7 @@ const searchUsers = async (searchQuery) => {
           })),
           include : [
             {
-              model: FriendShip,
+              model: Friendship,
               as: 'Followers',
               attributes: ['followingId']
             }
