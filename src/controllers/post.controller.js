@@ -1,4 +1,4 @@
-import { Post,User, Comments, Favorite } from '../models/index.js';
+import { Post,User, Comments, Favorite, Like } from '../models/index.js';
 import FriendShipServices from '../services/FriendShip.services.js';
 import { sendErrorResponse, sendSuccessResponse } from '../utils/helper.js';
 
@@ -63,6 +63,11 @@ const getTimeline = async (req, res) => {
                     model: Favorite,
                     as: 'Favorites',
                     attributes: ['postId', 'userId']
+                },
+                {
+                    model: Like,
+                    as: 'Likes',
+                    attributes: ['postId', 'userId']
                 }
             ],
             order: [['date', 'DESC']]  // Orden cronológico inverso (más reciente primero)
@@ -71,6 +76,7 @@ const getTimeline = async (req, res) => {
         // Formatear la respuesta
         const response = posts.map(post => {
             const isFavorite = post.Favorites && post.Favorites.some(favorite => favorite.userId === id);
+            const isLike = post.Likes && post.Likes.some(like => like.userId === id);
             return {
                 id: post.id,
                 user: {
@@ -85,6 +91,7 @@ const getTimeline = async (req, res) => {
                 media: post.media,
                 date: post.date,
                 isFavorite,
+                isLike,
                 likesCount: post.likesCount,
                 comments: post.Comments.map(comment => ({
                     id: comment.id,
@@ -331,7 +338,7 @@ const addPostAsFavorite = async (req, res) => {
     }
 };
 
-const addLike = async (req, res) => {
+const updateLike = async (req, res) => {
     try {
         const { postId } = req.params; // ID del post al que se da like
         const { id} = req.user; // ID del usuario autenticado
@@ -342,11 +349,19 @@ const addLike = async (req, res) => {
         });
 
         if (existingLike) {
-            return sendErrorResponse({ res, message: 'You have already liked this post', statusCode: 400 });
+            await Like.destroy({
+                where: {
+                    postId,
+                    userId: id
+                }
+            });
+            // Incrementar el contador de likes en el post
+            await Post.decrement('likesCount', { where: { id: postId } });
+            return sendSuccessResponse({ res, message: 'Like removed successfully', statusCode: 200 });
         }
 
         // Crear el like en la base de datos
-        await Like.create({ postId, id });
+        await Like.create({ postId, userId: id });
 
         // Incrementar el contador de likes en el post
         await Post.increment('likesCount', { where: { id: postId } });
@@ -354,32 +369,6 @@ const addLike = async (req, res) => {
         return sendSuccessResponse({ res, message: 'Post liked successfully', statusCode: 200 });
     } catch (error) {
         return sendErrorResponse({ res, error, message: 'Failed to like post' });
-    }
-};
-
-const removeLike = async (req, res) => {
-    try {
-        const { postId } = req.params; // ID del post del cual se quita el like
-        const { id} = req.user; // ID del usuario autenticado
-
-        // Verificar si el like existe para poder eliminarlo
-        const existingLike = await Like.findOne({
-            where: { postId, userId: id },
-        });
-
-        if (!existingLike) {
-            return sendErrorResponse({ res, message: 'Like not found', statusCode: 404 });
-        }
-
-        // Eliminar el like
-        await existingLike.destroy();
-
-        // Decrementar el contador de likes en el post
-        await Post.decrement('likesCount', { where: { id: postId } });
-
-        return sendSuccessResponse({ res, message: 'Like removed successfully', statusCode: 200 });
-    } catch (error) {
-        return  sendErrorResponse({ res, error, message: 'Failed to remove like' });
     }
 };
 
@@ -395,6 +384,5 @@ export default {
     getFavorites,
     addPostAsFavorite,
     removePostAsFavorite,
-    removeLike,
-    addLike
+    updateLike
 };

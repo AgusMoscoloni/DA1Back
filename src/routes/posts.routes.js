@@ -20,4 +20,6 @@ router.delete('/comments/:commentId', middleware.validateToken, PostController.d
 router.post('/posts/:postId/favorites', middleware.validateToken,PostController.addPostAsFavorite)
 router.get('/favorites', middleware.validateToken,PostController.getFavorites)
 router.delete('/favorites/:id',middleware.validateToken, PostController.removePostAsFavorite)
+
+router.put('/posts/:postId/likes', middleware.validateToken, PostController.updateLike);
 export default router;
