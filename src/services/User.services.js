@@ -16,7 +16,7 @@ const searchUsers = async (searchQuery) => {
             ],
           })),
         },
-        attributes: ['id', 'email', 'username', 'name', 'surname'],
+        attributes: ['id', 'email', 'username', 'name', 'surname', 'profile_pic'],
         limit: 10,
       });
   

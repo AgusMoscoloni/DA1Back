@@ -28,7 +28,7 @@ const sendFriendRequest = async (req, res) => {
         const newRequest = await Friendship.create({
             followerId: id,
             followingId: friendId,
-            status: 'pending'
+            status: 'accepted',
         });
 
         sendSuccessResponse({ res, data: newRequest, message: 'Friend request sent successfully', statusCode: 201 });
