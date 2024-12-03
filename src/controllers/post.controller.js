@@ -230,7 +230,7 @@ const removePostAsFavorite = async (req, res) => {
         const { postId } = req.params;
         const { id } = req.user;
 
-        const post = await Post.findByPk(id);
+        const post = await Post.findByPk(postId);
 
         if (!post) {
             throw new Error('Post not found');
