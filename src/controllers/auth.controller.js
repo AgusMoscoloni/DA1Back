@@ -103,7 +103,9 @@ const Login = async (req, res) => {
 const generateRecoveryCode = () => Math.floor(100000 + Math.random() * 900000);
 // Controlador para forgot password
 const forgotPassword = async (req, res) => {
+    console.log('Datos recibidos en el backend:', req.body); 
     const { email, username } = req.body;
+    console.log('Datos recibidos en el backend:', req.body);  // Verifica que los datos lleguen bien
 
     if (!email && !username) {
         return sendErrorResponse({ res, message: 'Todos los campos son requeridos', statusCode: 400 });
@@ -128,7 +130,11 @@ const forgotPassword = async (req, res) => {
         await user.save();
 
         // Enviar el correo con el código de recuperación
-        await sendRecoveryEmail(email, recoveryCode);
+        if (email) {
+            await sendRecoveryEmail(email, recoveryCode);
+        } else if (username) {
+            await sendRecoveryEmail(user.email, recoveryCode); 
+        }
 
        return sendSuccessResponse({ res, message: 'Se envió un correo de recuperación con el código de recuperación' });
     } catch (error) {
@@ -139,18 +145,25 @@ const forgotPassword = async (req, res) => {
 
 // Controlador para reset password
 const resetPassword = async (req, res) => {
-    const { email, code, newPassword } = req.body;
+    const { emailOrUsername, code, newPassword } = req.body;
 
-    if (!email || !code || !newPassword) {
+    if (!emailOrUsername || !code || !newPassword) {
         return sendErrorResponse({ res, message: 'Todos los campos son requeridos', statusCode: 400 });
     }
 
     try {
-        // Buscar al usuario y verificar el código de recuperación
-        const user = await User.findOne({ where: { email, recoveryCode: code } });
+        // Construir el filtro dinámico
+        let filter = {};
+        if (emailOrUsername.includes('@')) {
+            filter = { email: emailOrUsername, recoveryCode: code };
+        } else {
+            filter = { username: emailOrUsername, recoveryCode: code };
+        }
+
+        const user = await User.findOne({ where: filter });
 
         if (!user) {
-            return sendErrorResponse({ res, message: 'No se encontró ningún usuario con esos datos', statusCode: 404 });
+            return sendErrorResponse({ res, message: 'Código de recuperación inválido o expirado', statusCode: 404 });
         }
 
         // Hashear la nueva contraseña
@@ -167,6 +180,7 @@ const resetPassword = async (req, res) => {
         return sendErrorResponse({ res, error, message: 'Error al actualizar la contraseña' });
     }
 };
+
 
 const refreshToken = async (req, res) => {
     const { id } = req.user;
