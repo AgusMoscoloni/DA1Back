@@ -80,10 +80,10 @@ const getTimeline = async (req, res) => {
             return {
                 id: post.id,
                 user: {
-                    id: post.user?.id,
-                    name: post.user?.name,
-                    surname: post.user?.surname,
-                    profile_pic: post.user?.profile_pic
+                    id: post.User?.id,
+                    name: post.User?.name,
+                    surname: post.User?.surname,
+                    profile_pic: post.User?.profile_pic
                 },
                 title: post.title,
                 caption: post.caption,
