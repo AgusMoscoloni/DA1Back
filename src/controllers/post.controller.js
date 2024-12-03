@@ -107,7 +107,7 @@ const getTimeline = async (req, res) => {
             };
         });
 
-        return sendSuccessResponse({ res, data: response, message: 'Timeline retrieved successfully' });
+        return sendSuccessResponse({ res, data: {posts: response, favoritesCount: response.filter(post => post.isFavorite === true).length}, message: 'Timeline retrieved successfully' });
     } catch (error) {
         return sendErrorResponse({ res, error, message: 'Failed to retrieve timeline' });
     }
@@ -287,10 +287,18 @@ const getFavorites = async (req, res) => {
                 {
                     model: Post,
                     as: 'Post',  // Alias para el post que se hizo el like
-                    attributes: ['id', 'title', 'caption', 'location', 'media', 'date', 'likesCount']
+                    attributes: ['id', 'title', 'caption', 'location', 'media', 'date', 'likesCount'],
+                    include: [
+                        {
+                            model: Like,
+                            as: 'Likes',
+                            attributes: ['userId']
+                        }
+                    ]
                 }
             ]
         });
+        
         const response = favorites.map(favorite => ({
             id: favorite.Post.id,
             title: favorite.Post.title,
@@ -298,7 +306,8 @@ const getFavorites = async (req, res) => {
             location: favorite.Post.location,
             media: favorite.Post.media,
             date: favorite.Post.date,
-            likesCount: favorite.Post.likesCount
+            likesCount: favorite.Post.likesCount,
+            isLike: favorite.Post.Likes && favorite.Post.Likes.some(like => like.userId === id)
         }));
         return sendSuccessResponse({ res, data: response });
     } catch (error) {

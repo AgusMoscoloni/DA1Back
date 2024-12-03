@@ -136,7 +136,15 @@ const searchUsersController = async (req, res) => {
         if (users.length === 0) {
             return sendSuccessResponse({ res, message: 'No users found', data: [], statusCode: 200 });
         }
-
+        const response = users.map(user => ({
+            id: user.id,
+            name: user.name,
+            surname: user.surname,
+            username: user.username,
+            email: user.email,
+            profile_pic: user.profile_pic,
+            isFriend: user.Followers && user.Followers.some(friend => friend.followingId === id)
+        }));
         return sendSuccessResponse({ res, data: users, message: 'Users found', statusCode: 200 });
     } catch (error) {
         return sendErrorResponse({ res, error, message: 'Error searching users', statusCode: 500 });

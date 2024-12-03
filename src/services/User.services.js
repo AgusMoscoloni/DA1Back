@@ -15,6 +15,13 @@ const searchUsers = async (searchQuery) => {
               { surname: { [Op.iLike]: `%${term}%` } },
             ],
           })),
+          include : [
+            {
+              model: FriendShip,
+              as: 'Followers',
+              attributes: ['followingId']
+            }
+          ]
         },
         attributes: ['id', 'email', 'username', 'name', 'surname', 'profile_pic'],
         limit: 10,
