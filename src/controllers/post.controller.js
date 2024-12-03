@@ -58,6 +58,11 @@ const getTimeline = async (req, res) => {
                         }
                     ],
                     attributes: ['id', 'text', 'createdAt']
+                },
+                {
+                    model: Favorite,
+                    as: 'Favorites',
+                    attributes: ['postId', 'userId']
                 }
             ],
             order: [['date', 'DESC']]  // Orden cronológico inverso (más reciente primero)
@@ -65,6 +70,7 @@ const getTimeline = async (req, res) => {
 
         // Formatear la respuesta
         const response = posts.map(post => {
+            const isFavorite = post.Favorites && post.Favorites.some(favorite => favorite.userId === id);
             return {
                 id: post.id,
                 user: {
@@ -78,6 +84,7 @@ const getTimeline = async (req, res) => {
                 location: post.location,
                 media: post.media,
                 date: post.date,
+                isFavorite,
                 likesCount: post.likesCount,
                 comments: post.Comments.map(comment => ({
                     id: comment.id,
