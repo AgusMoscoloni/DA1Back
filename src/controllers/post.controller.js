@@ -108,7 +108,7 @@ const getTimeline = async (req, res) => {
             };
         });
 
-        return sendSuccessResponse({ res, data: {posts: response, message: 'Timeline retrieved successfully' });
+        return sendSuccessResponse({ res, data:  response, message: 'Timeline retrieved successfully' });
     } catch (error) {
         return sendErrorResponse({ res, error, message: 'Failed to retrieve timeline' });
     }
