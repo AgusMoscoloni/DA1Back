@@ -31,6 +31,7 @@ const getProfile = async (req, res) => {
             username: user.username,
             email: user.email,
             profile_pic: user.profile_pic,
+            bannerImage: user.bannerImage,
             gender: user.gender,
             descriptionProfile: user.descriptionProfile,
             followersCounts: user.followersCounts,
