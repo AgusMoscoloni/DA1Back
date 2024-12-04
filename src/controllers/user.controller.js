@@ -1,4 +1,4 @@
-import { User, Post, Comments, Friendship } from '../models/index.js';
+import { User, Post, Comments, Friendship, Like, Favorite} from '../models/index.js';
 import { sendErrorResponse, sendSuccessResponse } from '../utils/helper.js';
 import UserService from '../services/User.services.js';
 
@@ -13,7 +13,19 @@ const getProfile = async (req, res) => {
                     model: Post,
                     as: 'Posts',
                     attributes: ['id', 'title', 'caption', 'location', 'media', 'date', 'likesCount'],
-                    order: [['date', 'DESC']]
+                    order: [['date', 'DESC']],
+                    include : [
+                        {
+                            model: Like,
+                            as: 'Likes',
+                            attributes: ['userId']
+                        },
+                        {
+                            model: Favorite,
+                            as: 'Favorites',
+                            attributes: ['userId']
+                        }
+                    ]
                 },
                 {
                     model: Friendship,
@@ -28,8 +40,14 @@ const getProfile = async (req, res) => {
         }
 
         // Obtener el nivel del usuario en función de sus publicaciones y comentarios
-        const lvl = await getLevel(user.postCounts, user.commentCounts);
-        console.log("lvl:",lvl)
+        const lvl = getLevel(user.postCounts, user.commentCounts);
+        const likesCount = user.Posts?.reduce((total, post) => {
+            return total + (post.Likes?.filter(like => like.userId === id).length || 0);
+          }, 0);
+          
+          const favorites = user.Posts?.reduce((total, post) => {
+            return total + (post.Favorites?.filter(favorite => favorite.userId === id).length || 0);
+          }, 0);
         // Formatear la respuesta del perfil del usuario
         const response = {
             name: user.name,
@@ -39,6 +57,8 @@ const getProfile = async (req, res) => {
             profile_pic: user.profile_pic,
             bannerImage: user.bannerImage,
             gender: user.gender,
+            likesCount,
+            favoritesCount: favorites,
             descriptionProfile: user.descriptionProfile,
             followersCounts: user.Friendships.filter(friendship => friendship.followingId === id).length,
             followingCounts: user.Friendships.filter(friendship => friendship.followerId === id).length,
