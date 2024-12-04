@@ -28,8 +28,8 @@ const getProfile = async (req, res) => {
         }
 
         // Obtener el nivel del usuario en función de sus publicaciones y comentarios
-        const lvl = getLevel(user.postCounts, user.commentCounts);
-
+        const lvl = await getLevel(user.postCounts, user.commentCounts);
+        console.log("lvl:",lvl)
         // Formatear la respuesta del perfil del usuario
         const response = {
             name: user.name,
@@ -40,8 +40,8 @@ const getProfile = async (req, res) => {
             bannerImage: user.bannerImage,
             gender: user.gender,
             descriptionProfile: user.descriptionProfile,
-            followersCounts: user.Friendship.filter(friendship => friendship.followingId === id).length,
-            followingCounts: user.Friendship.filter(friendship => friendship.followerId === id).length,
+            followersCounts: user.Friendships.filter(friendship => friendship.followingId === id).length,
+            followingCounts: user.Friendships.filter(friendship => friendship.followerId === id).length,
             lvl,
             posts: user.Posts.map(post => ({
                 id: post.id,
@@ -61,15 +61,15 @@ const getProfile = async (req, res) => {
 };
 
 const getLevel = (postCounts, commentCounts) => {
-    console.log("aca:",postCounts, commentCounts)
-    if (postCounts == 0) {
-        return 1;
+    
+    if (postCounts < 2 ) {
+        return "1";
     } else if (postCounts >= 2 && postCounts < 4) {
-        return 2;
+        return "2";
     } else if (postCounts >= 4 && commentCounts < 4) {
-        return 3;
+        return "3";
     } else if (postCounts >= 4 && commentCounts >= 4) {
-        return 4;
+        return "4"
     }
 };
 
