@@ -125,7 +125,7 @@ const getPostById = async (req, res) => {
                 {
                     model: User,
                     as: 'User',  // Alias para el creador del post
-                    attributes: ['id', 'username', 'profile_pic']
+                    attributes: ['id', 'username', 'profile_pic', 'name', 'surname']
                 },
                 {
                     model: Comments,
@@ -171,6 +171,13 @@ const getPostById = async (req, res) => {
             caption: post.caption,
             location: post.location,
             media: post.media,
+            user: {
+                id: post.User.id,
+                name: post.User.name,
+                surname: post.User.surname,
+                username: post.User.username,
+                profile_pic: post.User.profile_pic
+            },
             date: post.date,
             likesCount: post.likesCount,
             favoritesCount: post.Favorites.length,
