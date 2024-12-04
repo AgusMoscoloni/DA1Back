@@ -32,6 +32,7 @@ const SignUp = async (req, res) => {
             username,
             email,
             profile_pic: `https://api.dicebear.com/8.x/initials/svg?radius=50&seed=${name[0] + surname[0]}`,
+            bannerImage: `https://dev-lineout-images.s3.us-east-1.amazonaws.com/utils/pexels-photo-259915.jpeg`,
             password: hashedPassword,
             gender,
             descriptionProfile
