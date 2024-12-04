@@ -294,6 +294,11 @@ const getFavorites = async (req, res) => {
                             model: Like,
                             as: 'Likes',
                             attributes: ['userId']
+                        },
+                        {
+                            model: Favorite,
+                            as: 'Favorites',
+                            attributes: ['userId']
                         }
                     ]
                 }
@@ -307,6 +312,7 @@ const getFavorites = async (req, res) => {
             location: favorite.Post.location,
             media: favorite.Post.media,
             date: favorite.Post.date,
+            favoritesCount: favorite.Favorites.length,
             likesCount: favorite.Post.likesCount,
             isLike: favorite.Post.Likes && favorite.Post.Likes.some(like => like.userId === id)
         }));
