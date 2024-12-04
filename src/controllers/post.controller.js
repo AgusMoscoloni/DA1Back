@@ -138,7 +138,17 @@ const getPostById = async (req, res) => {
                         }
                     ],
                     attributes: ['id', 'text', 'createdAt']  // Atributos del comentario
-                }
+                },
+                {
+                    model: Favorite,
+                    as: 'Favorites',
+                    attributes: [ 'userId']
+                },
+                {
+                    model: Like,
+                    as: 'Likes',
+                    attributes: ['userId']
+                },
             ],
             attributes: [
                 'id',
@@ -155,8 +165,32 @@ const getPostById = async (req, res) => {
         if (!post) {
             return sendErrorResponse({ res, message: 'Post not found', statusCode: 404 });
         }
-
-        return  sendSuccessResponse({ res, data: post, message: 'Post retrieved successfully' });
+        const response = {
+            id: post.id,
+            title: post.title,
+            caption: post.caption,
+            location: post.location,
+            media: post.media,
+            date: post.date,
+            likesCount: post.likesCount,
+            favoritesCount: post.Favorites.length,
+            comments: post.Comments.map(comment => ({
+                id: comment.id,
+                comment: comment.text,
+                createdAt: comment.createdAt,
+                user: {
+                    id: comment.User.id,
+                    name: comment.User.name,
+                    surname: comment.User.surname,
+                    profile_pic: comment.User.profile_pic
+                }
+            })),
+            isFavorite: post.Favorites && post.Favorites.some(favorite => favorite.userId === id),
+            isLike: post.Likes && post.Likes.some(like => like.userId === id),
+            favoritesCount: post.Favorites.length,
+            likesCount: post.likesCount
+        };
+        return  sendSuccessResponse({ res, data: response, message: 'Post retrieved successfully' });
     } catch (error) {
         return sendErrorResponse({ res, error, message: 'Failed to retrieve post' });
     }
