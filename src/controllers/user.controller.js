@@ -1,4 +1,4 @@
-import { User, Post, Comments, Friendship } from '../models/index.js';
+import { User, Post, Comments } from '../models/index.js';
 import { sendErrorResponse, sendSuccessResponse } from '../utils/helper.js';
 import UserService from '../services/User.services.js';
 const getProfile = async (req, res) => {
@@ -145,7 +145,7 @@ const searchUsersController = async (req, res) => {
             profile_pic: user.profile_pic,
             isFriend: user.Followers && user.Followers.some(friend => friend.followingId === id)
         }));
-        return sendSuccessResponse({ res, data: users, message: 'Users found', statusCode: 200 });
+        return sendSuccessResponse({ res, data: response, message: 'Users found', statusCode: 200 });
     } catch (error) {
         return sendErrorResponse({ res, error, message: 'Error searching users', statusCode: 500 });
     }
