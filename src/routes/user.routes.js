@@ -24,4 +24,5 @@ router.delete('/friends/:friendId', middleware.validateToken, FriendshipControll
 
 // Obtener la lista de amigos
 router.get('/friends', middleware.validateToken, FriendshipController.getFriends);
+router.get('/users/:userId', middleware.validateToken, userController.getUserInfo);
 export default router;

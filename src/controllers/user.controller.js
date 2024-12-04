@@ -203,28 +203,78 @@ const getUserInfo = async (req, res) => {
     try {
         const { userId } = req.params;
 
-        const user = await User.findByPk(userId);
-
+        // Buscar el usuario junto con sus posts
+        const user = await User.findByPk(userId, {
+            include: [
+                {
+                    model: Post,
+                    as: 'Posts',
+                    attributes: ['id', 'title', 'caption', 'location', 'media', 'date', 'likesCount'],
+                    order: [['date', 'DESC']],
+                    include : [
+                        {
+                            model: Like,
+                            as: 'Likes',
+                            attributes: ['userId']
+                        },
+                        {
+                            model: Favorite,
+                            as: 'Favorites',
+                            attributes: ['userId']
+                        }
+                    ]
+                },
+                {
+                    model: Friendship,
+                    as: 'Friendships',
+                    attributes: ['followingId', "followerId"]
+                }
+            ]
+        });
+        
         if (!user) {
             return sendErrorResponse({ res, message: 'User not found', statusCode: 404 });
         }
 
+        // Obtener el nivel del usuario en función de sus publicaciones y comentarios
+        const lvl = getLevel(user.postCounts, user.commentCounts);
+        const likesCount = user.Posts?.reduce((total, post) => {
+            return total + (post.Likes?.filter(like => like.userId === id).length || 0);
+          }, 0);
+          
+          const favorites = user.Posts?.reduce((total, post) => {
+            return total + (post.Favorites?.filter(favorite => favorite.userId === id).length || 0);
+          }, 0);
+        // Formatear la respuesta del perfil del usuario
         const response = {
             name: user.name,
             surname: user.surname,
             username: user.username,
             email: user.email,
             profile_pic: user.profile_pic,
+            bannerImage: user.bannerImage,
             gender: user.gender,
+            likesCount,
+            favoritesCount: favorites,
             descriptionProfile: user.descriptionProfile,
-            followersCounts: user.followersCounts,
-            followingCounts: user.followingCounts,
+            followersCounts: user.Friendships.filter(friendship => friendship.followingId === id).length,
+            followingCounts: user.Friendships.filter(friendship => friendship.followerId === id).length,
+            lvl,
+            posts: user.Posts.map(post => ({
+                id: post.id,
+                title: post.title,
+                caption: post.caption,
+                location: post.location,
+                media: post.media,
+                date: post.date,
+                likesCount: post.likesCount
+            }))
         };
 
-        sendSuccessResponse({ res, data: response, message: 'User info retrieved successfully' });
+        sendSuccessResponse({ res, data: response, message: 'Profile retrieved successfully' });
     } catch (error) {
-        sendErrorResponse({ res, error, message: 'Failed to retrieve user info' });
+        sendErrorResponse({ res, error, message: 'Failed to retrieve profile' });
     }
 };
 
-export default { getProfile, updateProfile,deleteAccount,searchUsersController };
+export default { getProfile, updateProfile,deleteAccount,searchUsersController,getUserInfo};
