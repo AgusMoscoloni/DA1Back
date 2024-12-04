@@ -93,6 +93,7 @@ const getTimeline = async (req, res) => {
                 isFavorite,
                 isLike,
                 likesCount: post.likesCount,
+                favoritesCount: post.Favorites.length,
                 comments: post.Comments.map(comment => ({
                     id: comment.id,
                     comment: comment.text,
@@ -107,7 +108,7 @@ const getTimeline = async (req, res) => {
             };
         });
 
-        return sendSuccessResponse({ res, data: {posts: response, favoritesCount: response.filter(post => post.isFavorite === true).length}, message: 'Timeline retrieved successfully' });
+        return sendSuccessResponse({ res, data: {posts: response, message: 'Timeline retrieved successfully' });
     } catch (error) {
         return sendErrorResponse({ res, error, message: 'Failed to retrieve timeline' });
     }
