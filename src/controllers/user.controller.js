@@ -190,5 +190,55 @@ const getUserInfo = async (req, res) => {
         sendErrorResponse({ res, error, message: 'Failed to retrieve user info' });
     }
 };
+const getUserProfile = async (req, res) => {
+    try {
+        const { userId } = req.params; // ID del usuario seleccionado
+
+        const user = await User.findByPk(userId, {
+            include: [
+                {
+                    model: Post,
+                    as: 'Posts',
+                    attributes: ['id', 'title', 'caption', 'location', 'media', 'date', 'likesCount'],
+                    order: [['date', 'DESC']],
+                },
+            ],
+        });
+
+        if (!user) {
+            return sendErrorResponse({ res, message: 'User not found', statusCode: 404 });
+        }
+
+        const lvl = getLevel(user.postCounts, user.commentCounts);
+
+        const response = {
+            name: user.name,
+            surname: user.surname,
+            username: user.username,
+            email: user.email,
+            profile_pic: user.profile_pic,
+            gender: user.gender,
+            descriptionProfile: user.descriptionProfile,
+            followersCounts: user.followersCounts,
+            followingCounts: user.followingCounts,
+            lvl,
+            posts: user.Posts.map((post) => ({
+                id: post.id,
+                title: post.title,
+                caption: post.caption,
+                location: post.location,
+                media: post.media,
+                date: post.date,
+                likesCount: post.likesCount,
+            })),
+        };
+
+        sendSuccessResponse({ res, data: response, message: 'User profile retrieved successfully' });
+    } catch (error) {
+        sendErrorResponse({ res, error, message: 'Failed to retrieve user profile' });
+    }
+};
+
+
 
 export default { getProfile, updateProfile,deleteAccount,searchUsersController };

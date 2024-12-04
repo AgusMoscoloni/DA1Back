@@ -9,6 +9,7 @@ const router = express.Router();
 router.get('/users/profile', middleware.validateToken, userController.getProfile);
 router.put('/users/profile', middleware.validateToken, userController.updateProfile);
 router.get('/users/search', middleware.validateToken, userController.searchUsersController); 
+router.get('/users/:userId/profile', getUserProfile);
 
 // Enviar una solicitud de amistad
 router.post('/friends/request', middleware.validateToken, FriendshipController.sendFriendRequest);
