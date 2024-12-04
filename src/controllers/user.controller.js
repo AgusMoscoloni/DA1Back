@@ -239,11 +239,11 @@ const getUserInfo = async (req, res) => {
         // Obtener el nivel del usuario en función de sus publicaciones y comentarios
         const lvl = getLevel(user.postCounts, user.commentCounts);
         const likesCount = user.Posts?.reduce((total, post) => {
-            return total + (post.Likes?.filter(like => like.userId === id).length || 0);
+            return total + (post.Likes?.filter(like => like.userId === userId).length || 0);
           }, 0);
           
           const favorites = user.Posts?.reduce((total, post) => {
-            return total + (post.Favorites?.filter(favorite => favorite.userId === id).length || 0);
+            return total + (post.Favorites?.filter(favorite => favorite.userId === userId).length || 0);
           }, 0);
         // Formatear la respuesta del perfil del usuario
         const response = {
@@ -257,8 +257,8 @@ const getUserInfo = async (req, res) => {
             likesCount,
             favoritesCount: favorites,
             descriptionProfile: user.descriptionProfile,
-            followersCounts: user.Friendships.filter(friendship => friendship.followingId === id).length,
-            followingCounts: user.Friendships.filter(friendship => friendship.followerId === id).length,
+            followersCounts: user.Friendships.filter(friendship => friendship.followingId === userId).length,
+            followingCounts: user.Friendships.filter(friendship => friendship.followerId === userId).length,
             lvl,
             posts: user.Posts.map(post => ({
                 id: post.id,
