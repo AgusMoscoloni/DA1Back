@@ -143,7 +143,7 @@ const searchUsersController = async (req, res) => {
             username: user.username,
             email: user.email,
             profile_pic: user.profile_pic,
-            isFriend: user.Followers && user.Followers.some(friend => friend.followingId === id)
+            isFriend: user.Friendships && user.Friendships.some(friend => friend.followingId === id) || false
         }));
         return sendSuccessResponse({ res, data: response, message: 'Users found', statusCode: 200 });
     } catch (error) {
