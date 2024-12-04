@@ -125,7 +125,7 @@ const deleteAccount = async (req, res) => {
 };
 const searchUsersController = async (req, res) => {
     const { query } = req.query;  // El parámetro de búsqueda se envía como una query string
-
+    const { id } = req.user;
     if (!query || query.trim() === '') {
         return sendErrorResponse({ res, message: 'No query provided', statusCode: 400 });
     }
