@@ -1,6 +1,7 @@
-import { User, Post, Comments } from '../models/index.js';
+import { User, Post, Comments, Friendship } from '../models/index.js';
 import { sendErrorResponse, sendSuccessResponse } from '../utils/helper.js';
 import UserService from '../services/User.services.js';
+
 const getProfile = async (req, res) => {
     try {
         const { id } = req.user;
@@ -13,6 +14,11 @@ const getProfile = async (req, res) => {
                     as: 'Posts',
                     attributes: ['id', 'title', 'caption', 'location', 'media', 'date', 'likesCount'],
                     order: [['date', 'DESC']]
+                },
+                {
+                    model: Friendship,
+                    as: 'Friendships',
+                    attributes: ['followingId', "followerId"]
                 }
             ]
         });
@@ -34,8 +40,8 @@ const getProfile = async (req, res) => {
             bannerImage: user.bannerImage,
             gender: user.gender,
             descriptionProfile: user.descriptionProfile,
-            followersCounts: user.followersCounts,
-            followingCounts: user.followingCounts,
+            followersCounts: user.Friendship.filter(friendship => friendship.followingId === id).length,
+            followingCounts: user.Friendship.filter(friendship => friendship.followerId === id).length,
             lvl,
             posts: user.Posts.map(post => ({
                 id: post.id,
@@ -55,6 +61,7 @@ const getProfile = async (req, res) => {
 };
 
 const getLevel = (postCounts, commentCounts) => {
+    console.log("aca:",postCounts, commentCounts)
     if (postCounts == 0) {
         return 1;
     } else if (postCounts >= 2 && postCounts < 4) {
