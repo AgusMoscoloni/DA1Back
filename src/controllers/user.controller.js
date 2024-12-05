@@ -29,7 +29,12 @@ const getProfile = async (req, res) => {
                 },
                 {
                     model: Friendship,
-                    as: 'Friendships',
+                    as: 'FollowingFriendships',
+                    attributes: ['followingId', "followerId"]
+                },
+                {
+                    model: Friendship,
+                    as: 'FollowerFriendships', 
                     attributes: ['followingId', "followerId"]
                 }
             ]
@@ -49,7 +54,6 @@ const getProfile = async (req, res) => {
             return total + (post.Favorites?.filter(favorite => favorite.userId === id).length || 0);
           }, 0);
         // Formatear la respuesta del perfil del usuario
-        console.log("aca: ",user.Friendships)
         const response = {
             name: user.name,
             surname: user.surname,
@@ -61,8 +65,8 @@ const getProfile = async (req, res) => {
             likesCount,
             favoritesCount: favorites,
             descriptionProfile: user.descriptionProfile,
-            followersCounts: user.Friendships.filter(friendship => friendship.followingId === id).length,
-            followingCounts: user.Friendships.filter(friendship => friendship.followerId != id).length,
+            followersCounts: user.FollowerFriendships.filter(friendship => friendship.followingId === userId).length,
+            followingCounts: user.FollowingFriendships.filter(friendship => friendship.followerId === userId).length,
             lvl,
             posts: user.Posts.map(post => ({
                 id: post.id,
@@ -227,7 +231,12 @@ const getUserInfo = async (req, res) => {
                 },
                 {
                     model: Friendship,
-                    as: 'Friendships',
+                    as: 'FollowingFriendships',
+                    attributes: ['followingId', "followerId"]
+                },
+                {
+                    model: Friendship,
+                    as: 'FollowerFriendships', 
                     attributes: ['followingId', "followerId"]
                 }
             ]
@@ -258,8 +267,8 @@ const getUserInfo = async (req, res) => {
             likesCount,
             favoritesCount: favorites,
             descriptionProfile: user.descriptionProfile,
-            followersCounts: user.Friendships.filter(friendship => friendship.followingId === userId).length,
-            followingCounts: user.Friendships.filter(friendship => friendship.followerId != userId).length,
+            followersCounts: user.FollowerFriendships.filter(friendship => friendship.followingId === userId).length,
+            followingCounts: user.FollowingFriendships.filter(friendship => friendship.followerId === userId).length,
             lvl,
             posts: user.Posts.map(post => ({
                 id: post.id,

@@ -21,7 +21,7 @@ const searchUsers = async (searchQuery) => {
         include : [
           {
             model: Friendship,
-            as: 'Friendships',
+            as: 'FollowingFriendships',
             attributes: ['followingId']
           }
         ]

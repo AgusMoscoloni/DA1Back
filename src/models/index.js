@@ -22,20 +22,26 @@ const Like = LikeModel(sequelize);  // Inicializa el modelo Like
 User.hasMany(Post, { foreignKey: 'userId' });
 Post.belongsTo(User, { foreignKey: 'userId' });
 
-// Relación de muchos a muchos para Amistades/Seguidores (Friendship)
-User.belongsToMany(User, {
-    through: Friendship,
-    as: 'Followers', // Usuarios que siguen al usuario actual
-    foreignKey: 'followingId',
-    otherKey: 'followerId'
-});
-User.belongsToMany(User, {
-    through: Friendship,
-    as: 'Following', // Usuarios seguidos por el usuario actual
-    foreignKey: 'followerId',
-    otherKey: 'followingId'
+User.hasMany(Friendship, { 
+    foreignKey: 'followerId', 
+    as: 'FollowingFriendships',
+    onDelete: 'CASCADE'
 });
 
+User.hasMany(Friendship, { 
+    foreignKey: 'followingId', 
+    as: 'FollowerFriendships' ,
+    onDelete : 'CASCADE'
+});
+Friendship.belongsTo(User, { 
+    foreignKey: 'followerId', 
+    as: 'Follower' 
+});
+
+Friendship.belongsTo(User, { 
+    foreignKey: 'followingId', 
+    as: 'Following' 
+});
 // Relación Publicación - Comentarios
 Post.hasMany(Comments, { foreignKey: 'postId' });
 Comments.belongsTo(Post, { foreignKey: 'postId' });
@@ -60,10 +66,6 @@ Like.belongsTo(User, { foreignKey: 'userId' });
 Post.hasMany(Like, { foreignKey: 'postId' });
 Like.belongsTo(Post, { foreignKey: 'postId' });
 
-// Relación Usuario - Friendship
-User.hasMany(Friendship, { foreignKey: 'followerId' });
-User.hasMany(Friendship, { foreignKey: 'followingId' });
-Friendship.belongsTo(User, { foreignKey: 'followerId' });
-Friendship.belongsTo(User, { foreignKey: 'followingId' });
+
 // Exportar los modelos y la conexión de Sequelize
 export { sequelize, User, Post, Friendship, Comments, Favorite, Ads, Like };
