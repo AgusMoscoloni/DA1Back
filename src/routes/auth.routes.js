@@ -10,7 +10,7 @@ router.post('/register', AuthController.SignUp);
 
 // Inicio de sesión
 router.post('/login', AuthController.Login);
-
+router.post('/login-with-google', AuthController.loginWithGoogle);
 router.post('/forgot-password', AuthController.forgotPassword);
 router.post('/reset-password', AuthController.resetPassword);
 router.post('/refresh-token',middleware.validateRefreshToken, AuthController.refreshToken);

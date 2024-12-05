@@ -187,5 +187,65 @@ const refreshToken = async (req, res) => {
     }
 };
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-export default { SignUp, Login, resetPassword, forgotPassword, refreshToken };
+// Controlador de Login con Google
+export const loginWithGoogle = async (req, res) => {
+    const { token } = req.body;
+
+    try {
+        // Verificar el token de Google
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: "352203923149-o21v9top9mlacc2hov9p4cpmhm1ild06.apps.googleusercontent.com",
+        });
+
+        const payload = ticket.getPayload();
+        const { email, name, picture } = payload;
+
+        // Buscar usuario por correo
+        let user = await User.findOne({ where: { email } });
+
+        if (!user) {
+            // Si no existe, crear un nuevo usuario
+            user = await User.create({
+                name: name.split(' ')[0],
+                surname: name.split(' ')[1],
+                username: email.split('@')[0], // Usar el prefijo del email como username inicial
+                email,
+                profile_pic: picture || `https://api.dicebear.com/8.x/initials/svg?radius=50&seed=${name[0]}`,
+                bannerImage: `https://dev-lineout-images.s3.us-east-1.amazonaws.com/utils/pexels-photo-259915.jpeg`,
+                password: bcrypt.hashSync(email + process.env.JWT_SECRET, 10), // Contraseña segura basada en el email
+                gender: "-",
+            });
+        }
+
+       
+         // Generar el access token y el refresh token
+         const accessToken = generateAccessToken(user);
+         const refreshToken = generateRefreshToken(user);
+ 
+         // Almacenar el refresh token en la base de datos o enviar como respuesta
+         await user.update({ refreshToken });
+         const userResponse = {
+             id: user.id,
+             name: user.name,
+             surname: user.surname,
+             username: user.username,
+             email: user.email,
+             profile_pic: user.profile_pic,
+             bannerImage: user.bannerImage,
+             gender: user.gender,
+             descriptionProfile: user.descriptionProfile || "",
+         };
+         sendSuccessResponse({ 
+             res, 
+             data: { accessToken, refreshToken, user:userResponse }, 
+             message: 'Login successful' 
+         });
+    } catch (err) {
+        console.error(err);
+        return sendErrorResponse({ res, error: err.message, message: 'Error logging in with Google' });
+    }
+};
+export default { SignUp, Login, resetPassword, forgotPassword, refreshToken,loginWithGoogle };
