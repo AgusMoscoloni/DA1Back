@@ -1,8 +1,7 @@
-import { Post,User, Comments, Favorite, Like } from '../models/index.js';
+import { Post,User, Comments, Favorite, Like,Friendship } from '../models/index.js';
 import FriendShipServices from '../services/FriendShip.services.js';
 import { sendErrorResponse, sendSuccessResponse } from '../utils/helper.js';
-
-
+import { Op } from 'sequelize';
 const createPost = async (req, res) => {
     try {
         const { id } = req.user;
@@ -254,7 +253,7 @@ const addComment = async (req, res) => {
         if (!post) {
             return sendErrorResponse({ res, message: 'Post not found', statusCode: 404 });
         }
-
+        console.log(post.User)
         const postOwnerId = post.User.id;
 
         // Verificar si son amigos
