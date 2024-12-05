@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
 import userSchema from '../validator/user.validator.js'; // Importa el esquema Joi que creamos
 import {User} from '../models/index.js'; // Importa el modelo de usuario
 import { sendErrorResponse, sendSuccessResponse } from '../utils/helper.js';
