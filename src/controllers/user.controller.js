@@ -49,6 +49,7 @@ const getProfile = async (req, res) => {
             return total + (post.Favorites?.filter(favorite => favorite.userId === id).length || 0);
           }, 0);
         // Formatear la respuesta del perfil del usuario
+        console.log("aca: ",user.Friendships)
         const response = {
             name: user.name,
             surname: user.surname,
@@ -61,7 +62,7 @@ const getProfile = async (req, res) => {
             favoritesCount: favorites,
             descriptionProfile: user.descriptionProfile,
             followersCounts: user.Friendships.filter(friendship => friendship.followingId === id).length,
-            followingCounts: user.Friendships.filter(friendship => friendship.followerId === id).length,
+            followingCounts: user.Friendships.filter(friendship => friendship.followerId != id).length,
             lvl,
             posts: user.Posts.map(post => ({
                 id: post.id,
@@ -258,7 +259,7 @@ const getUserInfo = async (req, res) => {
             favoritesCount: favorites,
             descriptionProfile: user.descriptionProfile,
             followersCounts: user.Friendships.filter(friendship => friendship.followingId === userId).length,
-            followingCounts: user.Friendships.filter(friendship => friendship.followerId === userId).length,
+            followingCounts: user.Friendships.filter(friendship => friendship.followerId != userId).length,
             lvl,
             posts: user.Posts.map(post => ({
                 id: post.id,
