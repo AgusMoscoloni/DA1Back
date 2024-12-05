@@ -72,7 +72,8 @@ const getTimeline = async (req, res) => {
             ],
             order: [['date', 'DESC']]  // Orden cronológico inverso (más reciente primero)
         });
-
+        
+        console.log("aca:", posts)
         // Formatear la respuesta
         const response = posts.map(post => {
             const isFavorite = post.Favorites && post.Favorites.some(favorite => favorite.userId === id);
@@ -101,7 +102,7 @@ const getTimeline = async (req, res) => {
                     user: {
                         id: comment.User.id,
                         name: comment.User.name,
-                        username: comment.User.username,
+                        username: comment.User.username || comment.User.email,
                         surname: comment.User.surname,
                         profile_pic: comment.User.profile_pic
                     }
@@ -135,7 +136,7 @@ const getPostById = async (req, res) => {
                         {
                             model: User,
                             as: 'User',  // Alias para el usuario que hizo el comentario
-                            attributes: ['id', 'username', 'profile_pic']
+                            attributes: ['id', 'username', 'profile_pic', 'username']
                         }
                     ],
                     attributes: ['id', 'text', 'createdAt']  // Atributos del comentario
@@ -189,6 +190,7 @@ const getPostById = async (req, res) => {
                 user: {
                     id: comment.User.id,
                     name: comment.User.name,
+                    username: comment.User.username,
                     surname: comment.User.surname,
                     profile_pic: comment.User.profile_pic
                 }
