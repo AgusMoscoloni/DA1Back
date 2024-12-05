@@ -238,25 +238,54 @@ const addComment = async (req, res) => {
     try {
         const { postId } = req.params; // ID del post al que se va a comentar
         const { text } = req.body; 
-        const { id } = req.user; 
+        const { id: userId } = req.user; // ID del usuario autenticado
 
         // Verificar que el post existe
-        const post = await Post.findByPk(postId);
+        const post = await Post.findByPk(postId, {
+            include: [
+                {
+                    model: User,
+                    as: 'User',
+                    attributes: ['id', 'name', 'surname', 'profile_pic'],
+                }
+            ]
+        });
+
         if (!post) {
             return sendErrorResponse({ res, message: 'Post not found', statusCode: 404 });
+        }
+
+        const postOwnerId = post.User.id;
+
+        // Verificar si son amigos
+        const isFriend = await Friendship.findOne({
+            where: {
+                [Op.or]: [
+                    { followerId: userId, followingId: postOwnerId },
+                    { followerId: postOwnerId, followingId: userId }
+                ],
+                status: 'accepted'
+            }
+        });
+
+        if (!isFriend) {
+            return sendErrorResponse({ res, message: 'You can only comment on posts from friends', statusCode: 403 });
         }
 
         // Crear el comentario
         const newComment = await Comments.create({
             postId,
-            userId: id,
+            userId,
             text,
             createdAt: new Date(),
         });
-        // Incrementar el contador de posts en el perfil del usuario
-        await User.increment('commentCounts', { where: { id } });
+
+        // Incrementar el contador de comentarios en el perfil del usuario
+        await User.increment('commentCounts', { where: { id: userId } });
+
         return sendSuccessResponse({ res, data: newComment, message: 'Comment added successfully', statusCode: 201 });
     } catch (error) {
+        console.error(`Error adding comment: ${error.message}`, error);
         return sendErrorResponse({ res, error, message: 'Failed to add comment' });
     }
 };
