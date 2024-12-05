@@ -65,8 +65,8 @@ const getProfile = async (req, res) => {
             likesCount,
             favoritesCount: favorites,
             descriptionProfile: user.descriptionProfile,
-            followersCounts: user.FollowerFriendships.filter(friendship => friendship.followingId === userId).length,
-            followingCounts: user.FollowingFriendships.filter(friendship => friendship.followerId === userId).length,
+            followersCounts: user.FollowerFriendships.filter(friendship => friendship.followingId === id).length,
+            followingCounts: user.FollowingFriendships.filter(friendship => friendship.followerId === id).length,
             lvl,
             posts: user.Posts.map(post => ({
                 id: post.id,
@@ -176,7 +176,7 @@ const searchUsersController = async (req, res) => {
             username: user.username,
             email: user.email,
             profile_pic: user.profile_pic,
-            isFriend: user.Friendships && user.Friendships.some(friend => friend.followingId === id) || false
+            isFriend: user.FollowingFriendships && user.FollowingFriendships.some(friend => friend.followingId === id) || false
         }));
         return sendSuccessResponse({ res, data: response, message: 'Users found', statusCode: 200 });
     } catch (error) {
