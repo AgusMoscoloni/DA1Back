@@ -136,50 +136,45 @@ const getFriends = async (req, res) => {
     try {
         const { id } = req.user;
 
-        // Obtener usuarios a los que el usuario sigue (following)
-        const following = await Friendship.findAll({
-            where: {
-                followerId: id
-            },
-            include: [
-                {
-                    model: User,
-                    as: 'User', // Cambia este alias según cómo definiste la relación en el modelo
-                    attributes: ['id', 'name', 'surname', 'profile_pic']
-                }
-            ]
-        });
+        // Ejecutar ambas consultas en paralelo
+        const [following, followers] = await Promise.all([
+            Friendship.findAll({
+                where: { followerId: id },
+                include: [
+                    {
+                        model: User,
+                        as: 'Following', // Alias definido en las asociaciones
+                        attributes: ['id', 'name', 'surname', 'profile_pic']
+                    }
+                ]
+            }),
+            Friendship.findAll({
+                where: { followingId: id },
+                include: [
+                    {
+                        model: User,
+                        as: 'Follower', // Alias definido en las asociaciones
+                        attributes: ['id', 'name', 'surname', 'profile_pic']
+                    }
+                ]
+            })
+        ]);
 
-        // Obtener usuarios que siguen al usuario (followers)
-        const followers = await Friendship.findAll({
-            where: {
-                followingId: id
-            },
-            include: [
-                {
-                    model: User,
-                    as: 'User', // Cambia este alias según cómo definiste la relación en el modelo
-                    attributes: ['id', 'name', 'surname', 'profile_pic']
-                }
-            ]
-        });
-
-        // Formatear la respuesta para 'following'
+        // Formatear respuestas
         const followingResponse = following.map(friend => ({
-            id: friend.User.id,
-            name: friend.User.name,
-            surname: friend.User.surname,
-            profile_pic: friend.User.profile_pic,
+            id: friend.Following.id,
+            name: friend.Following.name,
+            surname: friend.Following.surname,
+            profile_pic: friend.Following.profile_pic,
             status: friend.status,
             createdAt: friend.createdAt
         }));
 
-        // Formatear la respuesta para 'followers'
         const followersResponse = followers.map(friend => ({
-            id: friend.User.id,
-            name: friend.User.name,
-            surname: friend.User.surname,
-            profile_pic: friend.User.profile_pic,
+            id: friend.Follower.id,
+            name: friend.Follower.name,
+            surname: friend.Follower.surname,
+            profile_pic: friend.Follower.profile_pic,
             status: friend.status,
             createdAt: friend.createdAt
         }));
@@ -194,11 +189,10 @@ const getFriends = async (req, res) => {
             message: 'Friends retrieved successfully'
         });
     } catch (error) {
+        console.error(`Error retrieving friends for user ${req.user.id}: ${error.message}`, error);
         sendErrorResponse({ res, error, message: 'Failed to retrieve friends' });
     }
 };
-
-
 
 export default {
     sendFriendRequest,
