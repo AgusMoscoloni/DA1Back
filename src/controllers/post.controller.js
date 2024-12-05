@@ -54,7 +54,7 @@ const getTimeline = async (req, res) => {
                         {
                             model: User,
                             as: 'User',  // Alias para el usuario que hizo el comentario
-                            attributes: ['id', 'name', 'surname', 'profile_pic']
+                            attributes: ['id', 'name', 'surname', 'profile_pic', 'username']
                         }
                     ],
                     attributes: ['id', 'text', 'createdAt']
