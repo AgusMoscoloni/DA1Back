@@ -30,7 +30,7 @@ const sendFriendRequest = async (req, res) => {
             followingId: friendId,
             status: 'accepted',
         });
-
+        
         sendSuccessResponse({ res, data: newRequest, message: 'Friend request sent successfully', statusCode: 201 });
     } catch (error) {
         sendErrorResponse({ res, error, message: 'Failed to send friend request' });
