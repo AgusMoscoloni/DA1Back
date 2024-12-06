@@ -10,8 +10,8 @@ const PORT = process.env.PORT || 8080; // Puerto HTTPS configurable
 
 // Configuración de SSL
 const sslOptions = {
-    key: fs.readFileSync("./key.pem"), // Ruta a tu clave privada
-    cert: fs.readFileSync("./cert.pem") // Ruta a tu certificado
+    key: fs.readFileSync("./src/key.pem"), // Ruta a tu clave privada
+    cert: fs.readFileSync("./src/cert.pem"), // Ruta a tu certificado público
 };
 
 async function main() {
